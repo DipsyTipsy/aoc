@@ -55,6 +55,7 @@ session.cookies.set("session", settings.aoc_session)
 # If the puzzle input request failed, we can simply retry the command
 puzzle_input = session.get(
     f"https://adventofcode.com/{args.year}/day/{args.day}/input",
+    verify=False
 ).text[:-1]
 
 with open(f"{args.year}/{selected_date}/task_input/input.txt", "w+") as f:
