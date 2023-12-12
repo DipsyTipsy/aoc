@@ -1,16 +1,15 @@
 from solver import utils
 from collections import Counter
 from itertools import product
-import re
 
 
 def solve(input_file: str):
     lines = [x for x in utils.read_lines(input_file)]
 
     print()
-    #print("INPUT")
-    #for line in lines:
-    #    print(line)
+    print("INPUT")
+    for line in lines:
+        print(line)
 
     def check_record(spring, record):
         if len(spring) != len(record):
@@ -20,35 +19,24 @@ def solve(input_file: str):
     print("\nSOLVE")
     def filler(word: str, from_char: str, possibillities: tuple):
         options = [(c,) if c != from_char else possibillities for c in word]
-        return (''.join(o) for o in product(*options) if o.count("#") == total_springs)
+        return (''.join(o) for o in product(*options))
 
     possibillities = []
-    total_perms_checked = 0
     for line in lines:
-        print("\nChecking ", line)
         spring, record = line.split()
         record = [int(x) for x in record.split(",")]
 
+        counts = Counter(spring)
+
         poss = 0
-        total_poss = 0
-        total_springs = sum(record)
         for perm in filler(spring, "?", ("#", ".")):
             arr_spring = list(filter(lambda x: len(x) > 0, perm.split(".")))
             if check_record(arr_spring, record):
-                print("   ",perm)
                 poss += 1
-            else:
-                print(perm)
-            total_poss +=1
-        print(total_poss, poss)
-        total_perms_checked +=total_poss
 
-        #print(spring, record, poss)
         possibillities.append(poss)
 
-    print(total_perms_checked)
 
+    print(possibillities)
 
-    print(sum(possibillities))
-
-    # return sum(possibillities)
+    return sum(possibillities)
