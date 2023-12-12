@@ -1,4 +1,4 @@
-from solver import solve_1, solve_2, solve_cleaned
+from solver import solve_1, solve_2
 
 
 def test_part_1():
@@ -23,15 +23,3 @@ def test_part_2():
 
     output_2 = solve_2("./task_input/input.txt")
     print("\nPart 2 solution:", output_2)
-
-
-def test_part_2_cleaned():
-    output = solve_cleaned("./task_input/test_2.txt")
-
-    if output is None:
-        return True
-
-    assert output == 2286
-
-    output_2 = solve_2("./task_input/input.txt")
-    print("\nPart 2 solution (cleaned):", output_2)

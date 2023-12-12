@@ -1,50 +1,37 @@
 from solver import utils
+import re
+
 
 
 def solve(input_file: str):
     lines = utils.read_lines(input_file)
 
-    rows = []
+    max_y = len(lines)
+    max_x = len(lines[0])
+    symbols = [[False for i in range(max_x)] for j in range(max_y)]
 
-    for line in lines:
-        row = []
+    def set_location(y, x):
+        if(x >= 0 and y >= 0  and x <= max_x and y <= max_y):
+            symbols[y][x] = True
 
-        for char in line:
-            row.append(char)
+    for i, line in enumerate(lines):
+        for m in re.finditer(r"([^\d\.])", line):
+            set_location(i, m.start(0)-1)
+            set_location(i-1, m.start(0)-1)
+            set_location(i-1, m.start(0))
+            set_location(i-1, m.start(0)+1)
+            set_location(i, m.start(0)+1)
+            set_location(i+1, m.start(0)+1)
+            set_location(i+1, m.start(0))
+            set_location(i+1, m.start(0)-1)
 
-        rows.append(row)
+    numbers = []
+    for i, line in enumerate(lines):
+        for m in re.finditer(r"(\d+)", line):
+            if any([symbols[i][j] for j in range(m.start(0), m.end(0))]):
+                numbers.append(int(m.group()))
 
-    parts = []
 
-    current_number = ""
-    can_add = False
 
-    for j, row in enumerate(rows):
-        for i, current_char in enumerate(row):
-            adjacent = utils.get_adjacent(rows, j, i)
 
-            if not current_char.isdigit() and can_add:
-                if current_number == "":
-                    continue
-
-                parts.append(int(current_number))
-                current_number = ""
-                can_add = False
-                continue
-
-            if not current_char.isdigit():
-                current_number = ""
-                continue
-
-            current_number += current_char
-
-            if not all(char.isdigit() or char == "." for char in adjacent):
-                can_add = True
-
-            if i == (len(rows[0]) - 1) and can_add:
-                parts.append(int(current_number))
-                can_add = False
-
-        current_number = ""
-
-    return sum(parts)
+    return sum(numbers)

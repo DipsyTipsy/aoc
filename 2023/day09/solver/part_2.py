@@ -1,40 +1,22 @@
-from collections import defaultdict
-from functools import reduce
-
 from solver import utils
 
 
-def get_differences(line: list[int]):
-    return [j - i for i, j in zip(line[:-1], line[1:])]
-
-
 def solve(input_file: str):
-    lines = utils.read_lines(input_file)
-    lines = [list(map(int, line.split())) for line in lines]
+    def sub_arr(arr: list):
+        return arr[0] - arr[1] 
 
-    oasis = defaultdict(list)
+    lines = [ [int(y) for y in x.split()] for x in utils.read_lines(input_file)]
+    
+    estimates = []
+    for line in lines:
+        level = 0
+        data = [line]
 
-    for i, line in enumerate(lines):
-        oasis[i].append(line)
-        differences = get_differences(line)
+        while any(data[level]):
+            data.append([sub_arr(x) for x in utils.sliding_window(data[level], 2, 1)])
+            level += 1
 
-        while not all(diff == 0 for diff in differences):
-            oasis[i].append(differences)
-            differences = get_differences(differences)
+        estimate = sum([x[0] for x in data])
+        estimates.append(estimate)
 
-    history = []
-
-    for diffs in oasis.values():
-        diffs.reverse()
-
-        print(diffs)
-
-        for i, diff in enumerate(diffs):
-            if i == 0:
-                continue
-
-            diff.insert(0, diff[0] - diffs[i - 1][0])
-
-        history.append(diff[0])
-
-    return reduce(lambda x, y: x + y, history)
+    return sum(estimates)

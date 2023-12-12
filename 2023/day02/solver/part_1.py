@@ -1,33 +1,26 @@
-from collections import defaultdict
-
 from solver import utils
+import re
 
 
 def solve(input_file: str):
     lines = utils.read_lines(input_file)
+    contents = {"red": 12, "green": 13, "blue": 14}
 
-    matching_games = []
-
+    game_ids = []
     for line in lines:
-        gem_bag = defaultdict(int)
-
-        game_id, gems = line.split(":")
+        game_id, games = tuple(line.split(":"))
         game_id = int(game_id.replace("Game ", ""))
 
-        gem_showings = [entry.strip() for entry in gems.split(";")]
+        max_legal = True
+        for colour, max_val in contents.items():
+            color_list = [int(x) for x in re.findall(f'(\d+) {colour}', line)]
+            color_max = max(color_list)
+            if color_max > max_val:
+                max_legal = False
+                break
+        
+        if max_legal:
+            game_ids.append(game_id)
 
-        for showing in gem_showings:
-            showing = showing.split(",")
-            showing = [entry.strip() for entry in showing]
+    return sum(game_ids)
 
-            for gem in showing:
-                count, color = gem.split(" ")
-                count = int(count)
-
-                if gem_bag[color] < count:
-                    gem_bag[color] = count
-
-        if gem_bag["red"] <= 12 and gem_bag["green"] <= 13 and gem_bag["blue"] <= 14:
-            matching_games.append(game_id)
-
-    return sum(matching_games)

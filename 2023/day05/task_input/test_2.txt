@@ -1,5 +1,4 @@
 seeds: 79 14 55 13
-seed_ranges: (79, 92), (55,67)
 
 seed-to-soil map:
 50 98 2

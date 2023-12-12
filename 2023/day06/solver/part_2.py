@@ -1,19 +1,18 @@
 from solver import utils
+import re, math
 
 
 def solve(input_file: str):
-    lines = utils.read_lines(input_file)
+    lines = [re.sub(r"[A-z:\s]+", "", x) for x in utils.read_lines(input_file)]
+    times = int(lines[0])
+    records = int(lines[1])
+    games = 0
+    print(times, records, games)
 
-    time = int("".join(lines[0].split()[1:]))
-    distance = int("".join(lines[1].split()[1:]))
+    for millis in range(times):
+        distance = millis * (times - millis)
+        if distance > records:
+            games += 1
 
-    options = 0
-
-    for i in range(time):
-        remaining = time - i
-        traveled = i * remaining
-
-        if traveled > distance:
-            options += 1
-
-    return options
+    print(times, records, games)
+    return games

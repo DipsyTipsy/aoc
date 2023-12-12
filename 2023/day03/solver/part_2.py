@@ -1,57 +1,51 @@
+from solver import utils
+from functools import reduce
+from operator import mul
 import re
 
-from solver import utils
 
 
 def solve(input_file: str):
     lines = utils.read_lines(input_file)
-    rows = utils.create_matrix(lines)
 
-    numbers = []
+    max_y = len(lines)
+    max_x = len(lines[0])
+    possible_gear_loc = {}
+    gears = []
+    numbers = [{} for j in range(max_y)]
 
-    for j, line in enumerate(lines):
-        matches = re.finditer(r"(\d+)", line)
+    def possible_loc(symbol_loc, y, x):
+        if(x >= 0 and y >= 0  and x <= max_x and y <= max_y):
+            possible_gear_loc[symbol_loc].append((y,x))
 
-        for match in matches:
-            numbers.append(
-                (
-                    int(match.groups()[0]),
-                    [(j, i) for i in range(match.start(), match.end())],
-                )
-            )
+    for i, line in enumerate(lines):
+        for m in re.finditer(r"([\*])", line):
+            possible_gear_loc[(i, m.start(0))] = []
+            possible_loc((i, m.start(0)), i, m.start(0)-1)
+            possible_loc((i, m.start(0)), i-1, m.start(0)-1)
+            possible_loc((i, m.start(0)), i-1, m.start(0))
+            possible_loc((i, m.start(0)), i-1, m.start(0)+1)
+            possible_loc((i, m.start(0)), i, m.start(0)+1)
+            possible_loc((i, m.start(0)), i+1, m.start(0)+1)
+            possible_loc((i, m.start(0)), i+1, m.start(0))
+            possible_loc((i, m.start(0)), i+1, m.start(0)-1)
 
-    gear_acc = 0
+    for i, line in enumerate(lines):
+        for m in re.finditer(r"(\d+)", line):
+            value = m.group()
+            x = range(m.start(0), m.end(0))
+            key = hash(f"{value}.{x}")
+            numbers[i][key] = (value, x)
 
-    for j, row in enumerate(rows):
-        for i, current_char in enumerate(row):
-            if current_char != "*":
-                continue
+    for gear, locations in possible_gear_loc.items():
+        adjacent_numbers = set()
+        for loc in locations:
+            for key, numb in numbers[loc[0]].items():
+                if loc[1] in numb[1]: 
+                    adjacent_numbers.add(numb)
+        if len(adjacent_numbers) == 2:
+            gears.append(reduce(mul, [int(x[0]) for x in adjacent_numbers]))
 
-            adjacent = utils.get_adjacent(rows, j, i, with_index=True)
+    return sum(gears)
 
-            indices = []
 
-            for char in adjacent:
-                if char[0].isdigit():
-                    indices.append(char)
-
-            picked = set()
-
-            for index in indices:
-                index = index[1]
-
-                for i, entry in enumerate(numbers):
-                    _, positions = entry
-
-                    if any(index == position for position in positions):
-                        picked.add(i)
-
-            if len(picked) != 2:
-                continue
-
-            num_1 = numbers[picked.pop()][0]
-            num_2 = numbers[picked.pop()][0]
-
-            gear_acc += num_1 * num_2
-
-    return gear_acc

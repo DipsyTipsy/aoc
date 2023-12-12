@@ -11,20 +11,6 @@ def read_numbers(input_file: str):
         return [int(num) for num in f.read().split(",")]
 
 
-def create_matrix(lines: list[str]):
-    rows = []
-
-    for line in lines:
-        row = []
-
-        for char in line:
-            row.append(char)
-
-        rows.append(row)
-
-    return rows
-
-
 def sliding_window(
     array: list, window: int, step: int | None = None
 ) -> Generator[list, None, None]:
@@ -35,33 +21,31 @@ def sliding_window(
         yield array[i : i + window]
 
 
-def get_adjacent(arr: list, i: int, j: int, with_index: bool = False):
-    N = len(arr)
-    M = len(arr[0])
+def out_of_bounds(row: int, col: int, matrix: list[list]):
+    if row < 0 or row >= len(matrix):
+        return True
 
-    def within_bounds(i: int, j: int):
-        return not (i < 0 or j < 0 or (i > N - 1) or (j > M - 1))
+    if col < 0 or col >= len(matrix[0]):
+        return True
 
+    return False
+
+
+def get_adjacent(
+    row: int, col: int, matrix: list[list], width: int = 1, height: int = 1
+) -> tuple[int, int]:
+    skip_positions = [(row + i, col + j) for i in range(height) for j in range(width)]
     adjacent = []
+    for i in range(row - 1, row + 1 + height):
+        for j in range(col - 1, col + 1 + width):
+            # Skip current position
+            if (i, j) in skip_positions:
+                continue
 
-    bounds = [
-        (i - 1, j - 1),
-        (i - 1, j),
-        (i - 1, j + 1),
-        (i, j - 1),
-        (i, j + 1),
-        (i + 1, j - 1),
-        (i + 1, j),
-        (i + 1, j + 1),
-    ]
+            # Check if out of bounds
+            if out_of_bounds(row, col, matrix):
+                continue
 
-    for bound in bounds:
-        x, y = bound
-
-        if within_bounds(x, y):
-            if with_index:
-                adjacent.append((arr[x][y], (x, y)))
-            else:
-                adjacent.append(arr[x][y])
+            adjacent.append((i, j))
 
     return adjacent

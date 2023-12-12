@@ -1,26 +1,18 @@
-from functools import reduce
-
 from solver import utils
+import re, math
 
 
 def solve(input_file: str):
-    lines = utils.read_lines(input_file)
+    lines = [re.sub(r"[A-z:]+", "", x).split() for x in utils.read_lines(input_file)]
+    times = [int(x) for x in lines[0]]
+    records = [int(x) for x in lines[1]]
+    games = [0 for x in range(len(times))]
 
-    times = list(map(int, lines[0].split()[1:]))
-    distances = list(map(int, lines[1].split()[1:]))
+    for i in range(len(times)):
+        for millis in range(times[i]):
+            distance = millis * (times[i] - millis)
+            if distance > records[i]:
+                games[i] += 1
 
-    total_options = []
-
-    for time, distance in zip(times, distances):
-        options = 0
-
-        for i in range(time):
-            remaining = time - i
-            traveled = i * remaining
-
-            if traveled > distance:
-                options += 1
-
-        total_options.append(options)
-
-    return reduce(lambda x, y: x * y, total_options)
+    print(times, records, games)
+    return math.prod(games)

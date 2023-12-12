@@ -1,30 +1,20 @@
-import re
-from collections import defaultdict
-
 from solver import utils
+import math, re
 
 
 def solve(input_file: str):
-    lines = utils.read_lines(input_file)
-    lines = [line.replace(" | ", "|") for line in lines]
-    lines = [re.sub(r"Card.+?\d+: ", "", line) for line in lines]
-    lines = [line.split("|") for line in lines]
+    # Each line is a game, need to offset
+    lines = [re.sub(r'Card\s+\d+: ', "",x).split("|") for x in utils.read_lines(input_file)]
 
-    card_bag = defaultdict(int)
+    game_cards = [1 for x in range(len(lines))]
 
-    for card_number, line in enumerate(lines):
-        card_number += 1
-        card_bag[card_number] += 1
+    for i, line in enumerate(lines):
+        winning_numbers = set([int(x) for x in line[1].split()])
+        game_numbers = [int(x) in winning_numbers for x in line[0].split()]
 
-        winning_numbers, scratched = line
+        expansion_range = range(i+1, min(i+1+sum(game_numbers), len(game_cards)))
 
-        scratched = list(map(int, re.findall(r"\d+", scratched)))
-        winning_numbers = list(map(int, re.findall(r"\d+", winning_numbers)))
+        for x in expansion_range:
+            game_cards[x] += game_cards[i]
 
-        matches = [number for number in scratched if number in winning_numbers]
-
-        for _ in range(card_bag[card_number]):
-            for i in range(card_number + 1, card_number + len(matches) + 1):
-                card_bag[i] += 1
-
-    return sum(card_bag.values())
+    return sum(game_cards)

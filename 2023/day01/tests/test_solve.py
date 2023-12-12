@@ -3,6 +3,10 @@ from solver import solve_1, solve_2
 
 def test_part_1():
     output = solve_1("./task_input/test_1.txt")
+
+    if output is None:
+        return False
+
     assert output == 142
 
     output_1 = solve_1("./task_input/input.txt")

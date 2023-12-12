@@ -1,74 +1,46 @@
-from collections import Counter, defaultdict
-from functools import cmp_to_key
-
 from solver import utils
-
-POSSIBLE_CARDS = "AKQT98765432J"
-
-
-def sort_hands(hand_a: tuple[str, str, int], hand_b: tuple[str, str, int]):
-    for card_a, card_b in zip(hand_a[1], hand_b[1]):
-        if POSSIBLE_CARDS.index(card_a[0]) < POSSIBLE_CARDS.index(card_b[0]):
-            return 1
-        elif POSSIBLE_CARDS.index(card_a[0]) > POSSIBLE_CARDS.index(card_b[0]):
-            return -1
-
-    return 0
-
-
-def sort_occurences(a: tuple[str, int], b: tuple[str, int]):
-    if a[1] > b[1]:
-        return 1
-    elif a[1] < b[1]:
-        return -1
-
-    if POSSIBLE_CARDS.index(a[0]) < POSSIBLE_CARDS.index(b[0]):
-        return 1
-    elif POSSIBLE_CARDS.index(a[0]) > POSSIBLE_CARDS.index(b[0]):
-        return -1
-
-    return 0
+from collections import Counter
 
 
 def solve(input_file: str):
-    lines = utils.read_lines(input_file)
-
-    category_to_func = {
-        "five_of_a_kind": lambda hand: sorted(Counter(hand).values()) == [5],
-        "four_of_a_kind": lambda hand: sorted(Counter(hand).values()) == [1, 4],
-        "full_house": lambda hand: sorted(Counter(hand).values()) == [2, 3],
-        "three_of_a_kind": lambda hand: sorted(Counter(hand).values()) == [1, 1, 3],
-        "two_pair": lambda hand: sorted(Counter(hand).values()) == [1, 2, 2],
-        "one_pair": lambda hand: sorted(Counter(hand).values()) == [1, 1, 1, 2],
-        "high_card": lambda _: True,
-    }
-
-    hands = defaultdict(list)
+    lines = [x.split() for x in utils.read_lines(input_file)]
+    hand_types = {"5": [], "4": [], "32": [], "3": [], "22": [], "2": [], "1": []}
 
     for line in lines:
-        hand, bid = line.split()
+        hand = line[0]
+        count = Counter(hand)
+        count_no_j = Counter(list(filter(lambda x: x != "J", hand)))
 
-        occurences = Counter([c for c in hand if c != "J"]).most_common()
-        occurences = sorted(occurences, key=cmp_to_key(sort_occurences))
+        if("J" in count and count["J"] < 5):
+            top_count = count_no_j.most_common(1)[0][0]
+            count[top_count] += count["J"]
+            count["J"] = 0
 
-        original_hand = hand
+        hand_type = ""
+        for card, card_count in count.most_common(2):
+            if card_count > 1:
+                hand_type += str(card_count)
 
-        if len(occurences) > 0:
-            hand = hand.replace("J", occurences[-1][0])
+        if hand_type == "":
+            hand_type = "1"
 
-        for category, func in category_to_func.items():
-            if func(hand):
-                hands[category].append((hand, original_hand, bid))
-                hands[category].sort(key=cmp_to_key(sort_hands))
-                break
+        lexographic_hand = hand
+        lexo_map = {"A": "Z", "K": "Y", "Q": "X", "J": "!", "T": "V"}
+        for char, initial in lexo_map.items():
+            lexographic_hand = lexographic_hand.replace(char, initial)
 
-    winnings = 0
-    current_rank = 1
+        hand_types[hand_type].append((lexographic_hand, int(line[1])))
 
-    for category in list(category_to_func.keys())[::-1]:
-        for hand in hands[category]:
-            hand, original_hand, bid = hand
-            winnings += int(bid) * current_rank
-            current_rank += 1
+    order = []
+    for hand_type, hands in hand_types.items():
+        if len(hands) == 0:
+            continue
+        for hand in sorted(hands, reverse=True):
+            order.append(hand[1])
 
-    return winnings
+    max_rank = len(order)
+    winnings = []
+    for i, bid in enumerate(order):
+        winnings.append((max_rank - i) * bid)
+
+    return sum(winnings)

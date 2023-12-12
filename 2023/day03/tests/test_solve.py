@@ -20,6 +20,7 @@ def test_part_2():
         return True
 
     assert output == 467835
+    
 
     output_2 = solve_2("./task_input/input.txt")
     print("\nPart 2 solution:", output_2)

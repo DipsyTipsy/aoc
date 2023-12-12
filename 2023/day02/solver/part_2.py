@@ -1,39 +1,25 @@
-from collections import defaultdict
-from functools import reduce
-
 from solver import utils
+import re
 
 
 def solve(input_file: str):
     lines = utils.read_lines(input_file)
 
-    gem_bags = {}
+    contents = {"red": 12, "green": 13, "blue": 14}
 
+    game_power = []
     for line in lines:
-        gem_bag = defaultdict(int)
-
-        game_id, gems = line.split(":")
+        game_id, games = tuple(line.split(":"))
         game_id = int(game_id.replace("Game ", ""))
 
-        gem_showings = [entry.strip() for entry in gems.split(";")]
+        minimums = []
+        for colour in contents:
+            color_list = [int(x) for x in re.findall(f'(\d+) {colour}', line)]
+            color_min = max(color_list)
+            minimums.append(color_min)
 
-        for showing in gem_showings:
-            showing = showing.split(",")
-            showing = [entry.strip() for entry in showing]
+        power = minimums[0]*minimums[1]*minimums[2]
+        
+        game_power.append(power)
 
-            for gem in showing:
-                count, color = gem.split(" ")
-                count = int(count)
-
-                if gem_bag[color] < count:
-                    gem_bag[color] = count
-
-        gem_bags[game_id] = gem_bag
-
-    powers = []
-
-    for game_id, gem_bag in gem_bags.items():
-        power = reduce(lambda x, y: x * y, gem_bag.values())
-        powers.append(power)
-
-    return sum(powers)
+    return sum(game_power)

@@ -1,56 +1,59 @@
-from dataclasses import dataclass
-
 from solver import utils
-
-
-@dataclass
-class Node:
-    left: str
-    right: str
+import re
+import numpy as np
+import math
 
 
 def solve(input_file: str):
+    print()
     lines = utils.read_lines(input_file)
 
-    original_instructions = list(lines[0])
-
-    desert_map: dict[str, Node] = {}
-
+    instructions = list(lines[0])
+    paths = {}
     for line in lines[2:]:
-        desert_map[line[0:3]] = Node(left=line[7:10], right=line[12:15])
+        current_line = re.sub(r'[\=\(\),]', '', line).split()
+        paths[current_line[0]] = {"L": current_line[1], "R": current_line[2]}
 
-    current_position = "AAA"
+    positions = {}
+    for path in paths:
+        if path[2] == "A":
+            positions[path] = path
 
-    instructions = original_instructions.copy()
-
+    def all_at_goal(positions):
+        return all(position[2] == "Z" for position in positions.values())
+    
     steps = 0
+    goals = {key: {}  for key in positions.keys()}
+    while not all_at_goal(positions):
+        for key, position in positions.items():
+            options = paths[position]
+            dest = options[instructions[steps % len(instructions)]]
+            if (position[2] == "Z"):
+                if position in goals[key]:
+                    goals[key][position].append(steps)
+                else:
+                    goals[key][position] = [0,steps]
 
-    # print("Instructions:", instructions)
-
-    while current_position != "ZZZ":
-        if instructions == []:
-            instructions = original_instructions.copy()
-
-        next_instruction = instructions.pop(0)
-        # print("Next instruction", next_instruction)
-
-        if next_instruction == "L":
-            next_position = desert_map[current_position].left
-            # print(f"{current_position} --(L)-> {next_position}")
-        else:
-            next_position = desert_map[current_position].right
-            # print(f"{current_position} --(R)-> {next_position}")
-
-        current_position = next_position
+            positions[key] = dest
 
         steps += 1
+        if steps > 100000:
+            break
 
-        if steps % 1_000_000 == 0 and steps != 0:
-            print(f"Steps: {steps}")
+    increments = []
+    for goal, step in goals.items():
+        increment = [y-x for x, y in utils.sliding_window(list(step.values())[0], 2, 1)]
+        if increment:
+            increments.append(max(increment))
 
-    print("Steps taken:", steps)
-    return steps
+    # Find the least common demoniator in order to find where all loops meet
+    prod = math.lcm(*increments)
 
+    positions = []
+    for line in increments:
+         value = line + (line * prod) 
+         positions.append(value%line)        
 
-if __name__ == "__main__":
-    solve("./task_input/input.txt")
+    print(positions)
+  
+    return prod

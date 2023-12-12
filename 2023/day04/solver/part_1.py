@@ -1,31 +1,23 @@
-import re
-
 from solver import utils
+import math, re
 
 
 def solve(input_file: str):
-    lines = utils.read_lines(input_file)
-    lines = [line.replace(" | ", "|") for line in lines]
-    lines = [re.sub(r"Card.+?\d+: ", "", line) for line in lines]
+    lines = [re.sub(r'Card\s+\d+: ', "",x).split("|") for x in utils.read_lines(input_file)]
 
-    lines = [line.split("|") for line in lines]
+    winnings = []
+    for line in lines:
+        winning_numbers = set([int(x) for x in line[1].split()])
+        game_numbers = [int(x) in winning_numbers for x in line[0].split()]
 
-    score = 0
+        current_game = 0
+        for x in range(sum(game_numbers)):
+            if x == 0:
+                current_game +=1
+            else:
+                current_game = current_game*2
 
-    for winning_numbers, scratched in lines:
-        matches = []
-        scratched = list(map(int, re.findall(r"\d+", scratched)))
-        winning_numbers = list(map(int, re.findall(r"\d+", winning_numbers)))
+        winnings.append(current_game)
 
-        for number in scratched:
-            if number in winning_numbers:
-                matches.append(number)
+    return sum(winnings)
 
-        if len(matches) == 1:
-            score += 1
-        elif len(matches) == 0:
-            continue
-        else:
-            score += 1 * (2 ** (len(matches) - 1))
-
-    return score

@@ -49,3 +49,14 @@ def get_adjacent(
             adjacent.append((i, j))
 
     return adjacent
+
+def lookup(value: int, mapping_str: str):
+    dest, src, length = tuple([int(x) for x in mapping_str.split(" ")])
+
+    if(value in range(src, src + length)):
+        return dest + (value - src) 
+    return value
+
+def pairwise(iterable):
+    a = iter(iterable)
+    return zip(a, a)
