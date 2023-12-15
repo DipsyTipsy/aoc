@@ -20,7 +20,7 @@ def solve(input_file: str):
     print("\nSOLVE")
     def filler(word: str, from_char: str, possibillities: tuple):
         options = [(c,) if c != from_char else possibillities for c in word]
-        return (''.join(o) for o in product(*options) if o.count("#") == total_springs)
+        return (''.join(o) for o in product(*options) if re.findall(r"#+", ''.join(o)) == num_springs)
 
     possibillities = []
     total_perms_checked = 0
@@ -32,6 +32,7 @@ def solve(input_file: str):
         poss = 0
         total_poss = 0
         total_springs = sum(record)
+        num_springs = ["#"*x for x in record]
         for perm in filler(spring, "?", ("#", ".")):
             arr_spring = list(filter(lambda x: len(x) > 0, perm.split(".")))
             if check_record(arr_spring, record):
@@ -40,7 +41,7 @@ def solve(input_file: str):
             else:
                 print(perm)
             total_poss +=1
-        print(total_poss, poss)
+        #print(total_poss, poss)
         total_perms_checked +=total_poss
 
         #print(spring, record, poss)
