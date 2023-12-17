@@ -49,3 +49,30 @@ def get_adjacent(
             adjacent.append((i, j))
 
     return adjacent
+
+class Pos:
+    def __init__(self, y, x):
+        self.x = x
+        self.y = y
+
+    def __add__(self, o):
+        return Pos(self.y + o.y, self.x + o.x)
+
+    def __str__(self):
+        return f"Pos({self.y}, {self.x})"
+
+    def __repr__(self):
+        return f"Pos({self.y}, {self.x})"
+
+def traverse(pos: Pos, dir: Pos, grid, empty_space = "."):
+        new_pos = pos + dir
+        if new_pos.x in range(len(grid[0])) and new_pos.y in range(len(grid)):
+            if grid[new_pos.y][new_pos.x] == empty_space:
+                return traverse(new_pos, dir, grid)
+        return (pos, new_pos, grid[new_pos.y][new_pos.x])
+
+def get_pos_chr(pos: Pos, dir: Pos, grid, empty_space = "."):
+        new_pos = pos + dir
+        if new_pos.x in range(len(grid[0])) and new_pos.y in range(len(grid)):
+            return (grid[new_pos.y][new_pos.x], new_pos)
+        return ("", None)
