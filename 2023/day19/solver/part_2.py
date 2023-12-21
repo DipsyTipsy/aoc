@@ -21,9 +21,9 @@ def solve(input_file: str):
             prev_rules = []
             _raw_rule = [[x for x in y] for y in raw_rule]
             # print()
+            links = []
             for i, rule in enumerate(raw_rule):
-                # print(key, rule, current_rules)
-                sub_key = rule[-1]
+                sub_key = f"{key}:{i}:{rule[-1]}"
                 if len(rule) > 1:
                     _key, operator, value = re.findall(r"([a-z\:]+)([\>\<]+)(\d+)", rule[0])[0]
                     value = int(value)
@@ -35,8 +35,12 @@ def solve(input_file: str):
 
                 if len(rule) > 2:
                     current_rules[sub_key] = rule[0]
+                    graph[sub_key] = [rule[-1]]
+                    workflows[sub_key] = {rule[-1]: [rule[0]]}
                 elif len(rule) > 1:
                     current_rules[sub_key] = [rule[0]]
+                    graph[sub_key] = [rule[-1]]
+                    workflows[sub_key] = {rule[-1]: [rule[0]]}
                 else:
                     sub_key = f"default:{key}"
                     current_rules[sub_key] = []
@@ -57,13 +61,16 @@ def solve(input_file: str):
                         new_rule = f"{_key}{operator}{value}"
                         current_rules[sub_key].append(new_rule)
 
+                links.append(sub_key)
                 prev_rules.append(current_rules[sub_key][0])
 
             workflows[key] = current_rules
             workflows[f"default:{key}"] = {list(workflows[f"default:{key}"].keys())[0]: current_rules[f"default:{key}"]}
 
-            links = [x[-1] for x in _raw_rule]
+            print(f"{_raw_rule=}")
+            # links = [x[-1] for x in _raw_rule]
             graph[key] = links
+            print(f"{links=}")
         
     for flow in workflows.items():
         print(f"{flow=}")
