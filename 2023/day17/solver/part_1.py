@@ -24,9 +24,6 @@ class node():
 def solve(input_file: str):
     lines = [list(x) for x in utils.read_lines(input_file)]
 
-    optimal_path = [((12, 12), '0'), ((12, 11), '0'), ((11, 11), '0'), ((10, 11), '0'), ((10, 12), '0'), ((9, 12), '0'), ((8, 12), '0'), ((7, 12), '0'), ((7, 11), '0'), ((6, 11), '0'), ((5, 11), '0'), ((4, 11), '0'), ((4, 10), '0'), ((3, 10), '0'), ((2, 10), '0'), ((2, 9), '0'), ((2, 8), '0'), ((1, 8), '0'), ((0, 8), '0'), ((0, 7), '0'), ((0, 6), '0'), ((0, 5), '0'), ((1, 5), '0'), ((1, 4), '0'), ((1, 3), '0'), ((1, 2), '0'), ((0, 2), '0'), ((0, 1), '0'), ((0, 0), '2')]
-    optimal_path = [x[0] for x in optimal_path]
-
     print()
     for line in lines:
         print(line)
@@ -43,8 +40,9 @@ def solve(input_file: str):
 
     failsafe = 0
     path = []
+    total_heat = 0
 
-    while len(open_list) > 0 and failsafe < 500000:
+    while len(open_list) > 0:
         failsafe += 1
         current_node = open_list[0]
         currentIndex = 0
@@ -52,22 +50,23 @@ def solve(input_file: str):
             if sel_node.f < current_node.f:
                 current_node = sel_node
                 currentIndex = i
-        # print("Currentnode, OpenList\n",current_node.position, open_list)
-        print("Currentnode\n",current_node.position, current_node.g, current_node.direction)
+
+        print("\rCurrentnode",current_node.position, current_node.g, current_node.direction, flush=True)
         open_list.pop(currentIndex)
         closedList.append(current_node)
 
         if current_node.position == end_node.position:
             print("At Goal")
             current = current_node
+            total_heat = current_node.g
             while current is not None:
-                path.append((current.position, lines[current.position[0]][current.position[1]]))
+                path.append((current.position, current.g))
                 current = current.parent
             break
 
         # Generate children
         children = []
-        possible_dir = [(0, -1), (0, 1), (-1, 0), (1, 0)]
+        possible_dir = [(x, length) for length in range(1,4) for x in [(0, -1), (0, 1), (-1, 0), (1, 0)]]
 
         prev_path = []
         prev_dirs = {x:0 for x in possible_dir}
@@ -102,8 +101,12 @@ def solve(input_file: str):
             if child in closedList:
                 continue
 
-            child.g = current_node.g + int(lines[child.position[0]][child.position[1]])
-            # child.h = ((child.position[0] - end_node.position[0]) ** 2) + ((child.position[1] - end_node.position[1]) ** 2)
+            # print("\nSumming G for", child)
+            g = current_node.g
+            for i in range(1, child.direction[1]+1):
+                g += int(lines[child.parent.position[0]+(i*child.direction[0][0])][child.parent.position[1]+(i*child.direction[0][1])])
+                # print(g)
+            child.g = g
             child.h = 0
             child.f = child.g + child.h
 
@@ -112,31 +115,15 @@ def solve(input_file: str):
 
             open_list.append(child)
 
-        # current_path = []
-        # current = current_node
-        # while current is not None:
-        #     current_path.append((current.position, current.g))
-        #     current = current.parent
-        # grid = [["..." for x in line] for y in lines]
-        # for item in open_list:
-        #     grid[item.position[0]][item.position[1]] = "%3s" % "P"
-        #     print(item)
-        # for item in closedList:
-        #     grid[item.position[0]][item.position[1]] = "%3s" % "C"
-        # for step in current_path:
-        #     grid[step[0][0]][step[0][1]] = "%3d" % step[1]
-        # for line in grid:
-        #     print(line)
-        
-    heat_loss = []
-    grid = [["." for x in line] for y in lines]
+    # print(path)
+    grid = [["..." for x in line] for y in lines]
+
     for step in path:
-        heat_loss.append(int(step[1]))
-        grid[step[0][0]][step[0][1]] = step[1]
+        grid[step[0][0]][step[0][1]] = "%3d" % step[1]
         print(step)
-    print("Total Heat Loss:", sum(heat_loss))
+    print("Total Heat Loss:", total_heat)
 
     for line in grid:
         print(line)
 
-    return sum(heat_loss) - int(lines[start[0]][start[1]])
+    return total_heat
