@@ -14,12 +14,14 @@ def test_part_1():
 
 
 def test_part_2():
+    output = solve_2("./task_input/test_2.txt", 6)
+    assert output == 16
+    output = solve_2("./task_input/test_2.txt", 10)
+    assert output == 50
     output = solve_2("./task_input/test_2.txt", 50)
-
-    if output is None:
-        return True
-
-    assert output == ...
+    assert output == 1594
+    output = solve_2("./task_input/test_2.txt", 100)
+    assert output == 6536
 
     output_2 = solve_2("./task_input/input.txt")
     print("\nPart 2 solution:", output_2)
