@@ -1,77 +1,52 @@
-import argparse
-import os
-import subprocess
+import typer, requests, json, os, subprocess
+from typing_extensions import Annotated
+from pathlib import Path
 from datetime import datetime
+from rich import print
 
-import requests
-from pydantic import Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+def main(
+        aoc_session: Annotated[str, typer.Argument(envvar="AOC_SESSION")],
+        day: Annotated[int, typer.Option()] = datetime.today().day,
+        year: Annotated[int, typer.Option()] = datetime.today().year,
+        ):
+
+    selected_date = f"day{str(day).zfill(2)}"
+
+    path = f"{year}/{selected_date}"
+
+    if os.path.exists(f"{path}"):
+        print(f"Project for {selected_date} already exists, not overwriting")
+    else:
+        os.makedirs(f"{year}", exist_ok=True)
+        subprocess.run(f"cp -r ./template {year}/{selected_date}", shell=True)
 
 
-class Settings(BaseSettings):
-    aoc_session: str = Field(..., validation_alias="AOC_SESSION")
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    session = requests.Session()
+    session.cookies.set("session", aoc_session)
 
+    print(f"Getting Puzzle for {path}")
+    puzzle_input = session.get(
+        f"https://adventofcode.com/{year}/day/{day}/input",
+        ).text[:-1]
 
-settings = Settings()
+    with open(f"{path}/task_input/input.txt", "w") as f:
+        f.write(puzzle_input)
 
-parser = argparse.ArgumentParser(
-    prog="Advent of Code Generator",
-    description="Generate template for solving Advent of Code problems",
-    epilog="Happy solving!",
-)
-
-parser.add_argument(
-    "-d",
-    "--day",
-    default=datetime.today().day,
-    type=int,
-    help="The day to generate a template for. Default: current date",
-)
-parser.add_argument(
-    "-y",
-    "--year",
-    default=datetime.today().year,
-    type=int,
-    help="The year to generate a template for. Default: current year",
-)
-
-args = parser.parse_args()
-
-selected_date = f"day{str(args.day).zfill(2)}"
-
-if os.path.exists(f"{args.year}/{selected_date}"):
-    print(f"Project for {selected_date} already exists, not overwriting")
-else:
-    os.makedirs(f"{args.year}", exist_ok=True)
-    subprocess.run(f"cp -r ./template {args.year}/{selected_date}", shell=True)
     subprocess.run(
-        f"rm -rf ./{args.year}/{selected_date}/tests/test_utils.py", shell=True
+        (
+        f"code ./{path} "
+        f"./{path}/task_input/test_1.txt "
+        f"./{path}/tests/test_solve.py "
+        f"./{path}/solver/part_1.py "
+        f"./{path}/solver/part_2.py"
+        ),
+        shell=True,
     )
 
-session = requests.Session()
-session.cookies.set("session", settings.aoc_session)
+    subprocess.run(
+        f"cd {path} && uv run ptw -c --ignore .venv --ext .txt,.py -- -s -raFP -W ignore::pytest.PytestReturnNotNoneWarning -p no:cacheprovider", shell=True
+    )
 
-# If the puzzle input request failed, we can simply retry the command
-puzzle_input = session.get(
-    f"https://adventofcode.com/{args.year}/day/{args.day}/input",
-    verify=False
-).text[:-1]
 
-with open(f"{args.year}/{selected_date}/task_input/input.txt", "w+") as f:
-    f.write(puzzle_input)
-
-subprocess.run(
-    (
-        f"code ./{args.year}/{selected_date} "
-        f"./{args.year}/{selected_date}/task_input/test_1.txt "
-        f"./{args.year}/{selected_date}/tests/test_solve.py "
-        f"./{args.year}/{selected_date}/solver/part_1.py "
-        f"./{args.year}/{selected_date}/solver/part_2.py"
-    ),
-    shell=True,
-)
-
-subprocess.run(
-    f"cd {args.year}/{selected_date} && poetry install && ./run.sh", shell=True
-)
+if __name__ == "__main__":
+    typer.run(main)
