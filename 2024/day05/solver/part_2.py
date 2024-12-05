@@ -17,42 +17,17 @@ def check(line, rules):
     return value
 
 def fix(line, rules):
-    print(line)
-    for val in line:
-        cur_line = line.copy()
-        cur_line.remove(val)
-        print("- Starting check from", val)
-        test = _fix(cur_line, [val], rules)
-        print("fix result", test)
-        if test > 0:
-            print("Sorted: ", test)
-            return test
+    seen = []
+    for i in range(1, len(line)):
+        val = line[i]
+        if val in rules.get(line[i-1], []):
+            line = line.copy()
+            line.pop(i)
+            line.insert(i-1, val)
+            return fix(line, rules)
 
-    return test
-
-def _fix(neighbors, path, rules):
-    if len(neighbors) == 1:
-        print("END", path+neighbors)
-        val = check(path+neighbors, rules)
-        if val > 0:
-            return val
-        else:
-            return 0
-    
-    possible_neighbors = [val for val in neighbors if val in rules.get(path[-1], [])]
-
-    for val in possible_neighbors:
-        cur_line = neighbors.copy()
-        cur_line.remove(val)
-        if check(path+[val], rules) > 0:
-            further_check =  _fix(cur_line, path + [val], rules)
-            if further_check > 0:
-                return further_check
-        else:
-            continue
-
-    return  0
-
+    print("Sorted", line)
+    return line[int(len(line)/2)]
 
 def solve(input_file: str):
     print("start of part 2")
