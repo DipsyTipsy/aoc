@@ -1,5 +1,6 @@
 from solver import utils
 from itertools import permutations
+from multiprocessing import Pool, Array
 
 def mult(data):
     result = 0
@@ -13,16 +14,17 @@ def combine(data):
         result += str(data[i]) + str(data[i-1])
     return result
 
+
 def process(target, data):
-    print("Checking", target, data)
+#    print("Checking", target, data)
     if sum(data) == target:
-        print("Valid, sum")
+    #    print("Valid, sum")
         return True
     elif mult(data) == target:
-        print("Valid, mult")
+    #    print("Valid, mult")
         return True
     elif combine(data) == target:
-        print("Valid, combine")
+    #    print("Valid, combine")
         return True
 
     while len(data) > 1:
@@ -50,23 +52,33 @@ def process(target, data):
                 return True
     return False
 
+def init(queue_list):
+    global mp_list
+    mp_list = queue_list
 
+def queue_process(_input):
+    if process(_input[1], _input[2]):
+        with mp_list.get_lock():
+            mp_list[_input[0]] = _input[1]
 
 def solve(input_file: str):
     lines = [x.split(":") for x in utils.read_lines(input_file)]
     
     valid = 0
-    for line in lines:
+    data = []
+    mp_results = Array("L", len(lines))
+    for i, line in enumerate(lines):
         target = int(line[0])
         numbers = [int(x) for x in line[1].split(" ")[1:]]
 
 
         print(target, numbers)
-        if process(target, numbers):
-            print("Valid")
-            valid += target
+        data.append((i, target, numbers))
+
+    with Pool(8, initializer=init, initargs=(mp_results,)) as pool:
+        pool.map(queue_process, data)
+
     
-    return valid
-
-
-
+    print(sum(mp_results[:]))
+    
+    return sum(mp_results[:])
