@@ -1,7 +1,4 @@
 from solver import utils
-from collections import defaultdict
-from copy import deepcopy
-import time
 
 def step(pos, direction, grid):
     new_y = pos[0] + direction[0]
@@ -31,8 +28,6 @@ def check_loop(start, facing, grid):
 
     while True:
         if (_pos, _facing) in _visited:
-        # if this works i go to bed
-        #if _step > 10000:
             print("\t- Loop", _pos, _facing)
             return True
         
@@ -57,7 +52,7 @@ def solve(input_file: str):
 
     for y, line in enumerate(lines):
         for x, char in enumerate(line):
-            if not char in [".", "#"]:
+            if char not in [".", "#"]:
                 current_pos = (y,x)
                 current_facing = (-1, 0)
     
@@ -70,7 +65,7 @@ def solve(input_file: str):
     while True:
         # Check if possible blocker
         blocker, b_c = step(current_pos, current_facing, lines)
-        if not blocker in possible_blocker and b_c == ".":
+        if blocker not in possible_blocker and b_c == ".":
             print("Check from ", (current_pos, current_facing), "Possible Blocker", blocker, b_c)
             lines[blocker[0]][blocker[1]] = "#"
 
