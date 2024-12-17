@@ -43,9 +43,45 @@ def solve(input_file: str):
         for positions in plots:
             area = 0 
             sides = 0
+            perimiters = defaultdict(list)
+            adjacent = defaultdict(list)
             for pos in positions:
                 area += 1
                 print(pos)
+
+                for dir in [(-1, 0), (0, 1), (1, 0), (0, -1)]:
+                    ny = pos[0]+dir[0]
+                    nx = pos[1]+dir[1]
+                    if (ny,nx) not in positions:
+                        print(pos, "Perimiter", dir)
+                        perimiters[pos].append(dir)
+                    else:
+                        adjacent[pos].append((ny,nx))
+            
+            seen = set()
+            sides = 0
+            for pos in positions:
+                for perimiter in perimiters[pos]:
+                    side = set()
+                    if not (pos, perimiter) in seen:
+                        to_check = [pos]
+                        cur = pos
+                        side.add(cur)
+                        while len(to_check) > 0:
+                            for adj in adjacent[cur]:
+                                if perimiter in perimiters.get(adj,[]) and (adj, perimiter) not in seen:
+                                    to_check.append(adj)
+                                    print("Found same permiter in adj", adj, perimiter)
+                                    side.add(adj)
+                            
+                            cur = to_check.pop()
+                            seen.add((cur, perimiter ))
+                    if len(side) > 0:
+                        print("Found side", side)
+                        sides += 1
+
+
+
             print(area, sides)
             total_price += area*sides
 
