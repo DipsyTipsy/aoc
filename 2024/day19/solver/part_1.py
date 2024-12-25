@@ -1,5 +1,6 @@
 from solver import utils
 from itertools import permutations
+import re
 
 
 def solve(input_file: str):
@@ -10,23 +11,33 @@ def solve(input_file: str):
     targets = lines[2:]
     print(patterns, targets)
 
-    posisble = []
+    possible = set()
 
     for target in targets:
-        _target = target
+        print(target)
         _patterns = set((x for x in patterns if x in target))
-        for perm in permutations(_patterns):
-            print(perm)
-            _target = target
-            for pattern in perm:
-                _target =  _target.replace(pattern, "")
-                if len(_target) == 0:
-                    posisble.append(target)
-                    break
-            if len(_target) == 0:
-                break
+        hits = [0]*len(target)
+        for pattern in _patterns:
+            print(pattern)
+            indexes = [x.span() for x in re.finditer(pattern, target)]
+            for start,end in indexes:
+                for i in range(start,end):
+                    print(i)
+                    hits[i] += 1
+            print(pattern, indexes)
+        
+        sub_pattern = "|".join(_patterns)
+        sub_target = re.sub(sub_pattern, " ",target)
+        print(sub_target)
 
-        print(target, len(_target), _target)
+        print(hits)
+
+        if all([x > 0 for x in hits]):
+            print("Possible")
+            possible.add(target)
+        else:
+            print("Impossible")
+        print()
     
-    print(posisble)
-    return len(posisble)
+    print(possible)
+    # return len(possible)
