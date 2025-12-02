@@ -2,22 +2,21 @@ from solver import utils
 
 def check_valid(num):
     num = str(num)
-    for check in range(1,int(len(num)/2)+1):
-        if not len(num) % check:
+    str_len = len(num)
+    for check in range(1, (str_len // 2) + 1):
+        if not str_len % check:
             to_check = num[:check]
             r = num.replace(to_check, "")
             if len(r) == 0:
-                return True
-    return False
+                return int(num)
+    return 0
 
 def solve(input_file: str):
-    lines = utils.read_lines(input_file)
-    ranges = [(int(x.split("-")[0]), int(x.split("-")[1])) for x in lines[0].split(",")]
+    lines = utils.read_lines(input_file)[0].split(",")
+    ranges = ((int(a) for a in x.split("-")) for x in lines)
     invalid = 0
 
     for min,max in ranges:
-        for i in range(min, max+1):
-            if check_valid(i):
-                invalid += i
+        invalid += sum((check_valid(x) for x in range(min, max+1)))
     
     return invalid

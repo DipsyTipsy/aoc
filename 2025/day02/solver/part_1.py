@@ -1,22 +1,14 @@
 from solver import utils
 
 def check_valid(num):
-    length = len(str(num))
-    half = int(length/2)
-    if not length % 2:
-        a = str(num)[:half]
-        b = str(num)[half:]
-        return a  == b
-    return False
+    cnum = str(num)
+    return num if cnum.replace(cnum[len(cnum) // 2:], "") == "" else 0
 
 def solve(input_file: str):
-    lines = utils.read_lines(input_file)
-    ranges = [(int(x.split("-")[0]), int(x.split("-")[1])) for x in lines[0].split(",")]
+    lines = utils.read_lines(input_file)[0].split(",")
+    ranges = ((int(a) for a in x.split("-")) for x in lines)
     invalid = 0
 
     for min,max in ranges:
-        for i in range(min, max+1):
-            if check_valid(i):
-                invalid += i
-    
+        invalid += sum((check_valid(x) for x in range(min, max+1)))
     return invalid
