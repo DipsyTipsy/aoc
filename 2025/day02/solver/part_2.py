@@ -3,10 +3,9 @@ import re
 
 def check_valid(num):
     num = str(num)
-    for check in range(len(num)):
+    for check in range(int(len(num)/2)+1):
         r = re.sub(num[:check], "", num)
         if len(r) == 0:
-            print(r, len(r))
             return True
 
 
