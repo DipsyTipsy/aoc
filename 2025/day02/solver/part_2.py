@@ -4,7 +4,8 @@ import re
 def check_valid(num):
     num = str(num)
     for check in range(int(len(num)/2)+1):
-        r = re.sub(num[:check], "", num)
+        # r = re.sub(num[:check], "", num)
+        r = num.replace(num[:check], "")
         if len(r) == 0:
             return True
 
