@@ -9,9 +9,8 @@ def cartesian(a,b):
         pow(a[2]-b[2], 2)
         )
 
-
+@utils.performance_timer
 def solve(input_file: str,connections):
-    print()
     lines = utils.read_lines(input_file)
     boxes = [tuple([int(x) for x in line.split(",")]) for line in lines]
 
@@ -57,9 +56,4 @@ def solve(input_file: str,connections):
             box_count[box] +=1
 
 
-    for box in box_count.items():
-        if box[1] > 1:
-            print(box)
-    print(sorted(circut_len, reverse=True))
-    
     return math.prod(sorted(circut_len, reverse=True)[:3])

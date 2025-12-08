@@ -10,8 +10,8 @@ def cartesian(a,b):
         )
 
 
+@utils.performance_timer
 def solve(input_file: str):
-    print()
     lines = utils.read_lines(input_file)
     boxes = [tuple([int(x) for x in line.split(",")]) for line in lines]
 
