@@ -2,6 +2,7 @@ from solver import solve_1, solve_2
 
 
 def test_part_1():
+    print("\n# Part 1:")
     output = solve_1("./task_input/test_1.txt", 10)
 
     if output is None:
@@ -10,10 +11,11 @@ def test_part_1():
     assert output == 40
 
     output_1 = solve_1("./task_input/input.txt", 1000)
-    print("\nPart 1 solution:", output_1)
+    print("# Part 1 solution:", output_1)
 
 
 def test_part_2():
+    print("\n# Part 2:")
     output = solve_2("./task_input/test_2.txt")
 
     if output is None:
@@ -22,4 +24,4 @@ def test_part_2():
     assert output == 25272
 
     output_2 = solve_2("./task_input/input.txt")
-    print("\nPart 2 solution:", output_2)
+    print("# Part 2 solution:", output_2)
