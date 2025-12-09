@@ -8,7 +8,6 @@ def area(a,b):
     y = max(a[1],b[1]) - min(a[1],b[1])+1
     return x*y
 
-@utils.performance_timer
 def solve(input_file: str):
     lines = [tuple([int(x) for x in line.split(",")]) for line in utils.read_lines(input_file)]
 
