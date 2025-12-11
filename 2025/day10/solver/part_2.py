@@ -1,7 +1,9 @@
 from solver import utils
-import re
+import re, math
 from collections import defaultdict
 import numpy as np
+from itertools import combinations, combinations_with_replacement, permutations, product
+
 
 def press_button(button, cur_state, target_state):
     n_state = cur_state+button
@@ -10,18 +12,18 @@ def press_button(button, cur_state, target_state):
 def calc_distance(cur_state, target_state):
     return np.sum(target_state-cur_state)
 
-def go_deeper(pos_states, depth, target_state, buttons, visited):
+def go_deeper(pos_states, distance, depth, target_state, buttons):
     if depth > 20000:
         return
 
-    if all([str(x) in visited for x in pos_states]) and depth > 0:
-        print("dont bother")
-        return
+    # if all([str(x) in visited for x in pos_states]) and depth > 0:
+    #     print("dont bother")
+    #     return
 
     cur_state = pos_states
     if len(cur_state) == 0:
         return None
-    print("\r depth:", depth, len(visited), len(cur_state),"                ", end="")
+    print("\r depth:", depth, distance,len(cur_state),"                ", end="")
     pos = None
 
     for button in buttons:
@@ -47,17 +49,18 @@ def go_deeper(pos_states, depth, target_state, buttons, visited):
         return
 
     pos_states = np.unique(pos, axis=0)
-    filter_ = [not str(x) in visited for x in pos_states]
-    pos_states = pos_states[filter_]
+    # filter_ = [not str(x) in visited for x in pos_states]
+    # pos_states = pos_states[filter_]
 
     distances = np.array([calc_distance(x, target_state) for x in pos_states])
     while len(distances) > 0:
         # print()
-        filter_ = [not hash(str(x)) in visited for x in pos_states]
+        # filter_ = [not hash(str(x)) in visited for x in pos_states]
         # print("CHECKING", len(distances))
         if len(distances) > 0:
-            [visited.add(str(x)) for x in cur_state]
-            d = go_deeper(pos_states[distances == np.min(distances)], depth+1, target_state, buttons, visited)
+            # [visited.add(str(x)) for x in cur_state]
+            min_distance = np.min(distances)
+            d = go_deeper(pos_states[distances == np.min(distances)],min_distance, depth+1, target_state, buttons)
             if d:
                 return d
             else:
@@ -65,9 +68,9 @@ def go_deeper(pos_states, depth, target_state, buttons, visited):
                 # print("Moving min", d, pos_states)
                 pos_states = pos_states[distances > min(distances)] 
                 distances = distances[distances > min(distances)]
-                filter_ = [not hash(str(x)) in visited for x in pos_states]
-                pos_states[filter_]
-                distances[filter_]
+                # filter_ = [not hash(str(x)) in visited for x in pos_states]
+                # pos_states[filter_]
+                # distances[filter_]
         else:
             print("All dist checked")
             return None
@@ -88,7 +91,7 @@ def search(pos_states, target_state, buttons):
         cur_min = min([distance for distance in queue.keys()])
         next = queue[cur_min].pop(0)
         depth = visited[str(next)]
-        print(max(next), cur_min, min([distance for distance in queue.keys()]), len(visited), len(queue))
+        # print(max(next), cur_min, min([distance for distance in queue.keys()]), len(visited), len(queue))
         if len(queue[cur_min]) == 0:
             queue.pop(cur_min)
 
@@ -111,6 +114,93 @@ def search(pos_states, target_state, buttons):
         #         print(k, len(v), type(v))
         #     return
 
+def find_presses(buttons, target_levels):
+    max_ = max(target_levels)
+    min_ = min(target_levels)
+    l_buttons = len(buttons)
+    
+
+
+    cur_state = [np.zeros(len(target_levels))]
+    print(type(cur_state))
+    
+    # for i in range(max_, max_*2):
+    #     print(i)
+    #     for j in range(0, i):
+    #         print(j)
+    print()
+    for i in range(10):
+        print(i, len(cur_state))
+        n_cur = []
+        for s in cur_state:
+            # print(type(s), s.shape)
+            s = s + buttons
+            # s = s.tolist()
+            # print("s",s)
+            for x in s:
+                n_cur.append(x)
+        cur_state = np.unique(n_cur, axis=1)
+        cur_state = cur_state[[np.all(x<=target_levels) for x in cur_state]]
+        cur_state = cur_state[0][:10]
+        # print(cur_state)
+        print()
+
+
+        cur_state = n_cur 
+        # print("cur", cur_state)
+        # # cur_state = np.unique([s+buttons for s in cur_state], axis=1)
+
+        # print(len(cur_state), cur_state)
+        
+        if any([np.all(x == target_levels) for x in cur_state]):
+            return i
+        # print(cur_state)
+    
+        #     print("num_buttons", j, "/", l_buttons-1, "total_presses", i)
+
+
+        #     (np.sum(combo) for combo in combinations(buttons, j))
+
+
+        #     for combo in combinations(buttons, j):
+        #         # print(sum(combo), target_levels)
+        #         # s_combo = sum(combo)
+        #         print(sum(combo), i, max_, min_)
+        #         # return 0
+        #         print(np.sum(combo))
+
+        #         # correct = (np.sum(sum(n_cur) == target_levels) for n_cur in combinations_with_replacement(combo, i))
+        #         # # print("num_correct", correct)
+        #         # if any([x == len(target_levels) for x in correct]):
+        #         #     return i
+                
+        #             # n_correct = np.sum([sum(n_cur) == target_levels])
+        #             # if n_correct == len(target_levels):
+        #             #     print("Lucky break!")
+        #             #     return i
+        #             # print(n_correct)
+
+        # if any(cur >= target_levels):
+        #     rem_buttons = buttons #[x for x in buttons if any(x != button)]
+        #     room = i
+
+        #     print(max_, room)
+        #     if room > 0:
+        #         print("Testing combos", room, max_)
+        #         for other in combinations_with_replacement(rem_buttons, room):
+        #             n_cur = sum(other)
+        #             n_correct = np.sum([n_cur == target_levels])
+
+        #             if n_correct == len(target_levels):
+        #                 print("Lucky break!")
+        #                 return i
+
+        #             if n_correct > num_correct:
+        #                 num_correct = n_correct
+        #                 print("better", num_correct,  len(target_levels))
+        #                 # print("ncurr", n_cur, target_levels)
+            
+
 @utils.performance_timer
 def solve(input_file: str):
     lines = utils.read_lines(input_file)
@@ -131,14 +221,18 @@ def solve(input_file: str):
         
         buttons = n_buttons
         
-        print(cur_state, target_levels)
+        print(cur_state, target_levels, buttons)
+
+        # presses += find_presses(buttons, target_levels)
+                
+                # print(sum(button), button)
 
         depth = 0
-        # visited = set()
-        # pos_states = np.array(cur_state)
-        # pos_states = np.vstack((pos_states, pos_states))
-        # result = go_deeper(pos_states, depth, target_levels, buttons, visited)
-        # presses += result
-        presses += search(cur_state, target_levels, buttons)
+        pos_states = np.array(cur_state)
+        pos_states = np.vstack((pos_states, pos_states))
+        result = go_deeper(pos_states, 10000, depth, target_levels, buttons)
+        presses += result
+
+        # presses += search(cur_state, target_levels, buttons)
         
     return presses
