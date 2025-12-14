@@ -72,15 +72,15 @@ def all_at_once(to_place,grid, presents):
             # print(positions)
             positions_ = positions.copy()
             min_val_pos = np.min(positions_[positions_ > 0])
-            max_val +=  np.max(positions_[positions_ > 0])
+            max_val +=  np.max(positions_[positions_ > 0])*count
             for i in range(count-1):
                 positions_ += positions
-            print()
-            print(positions_)
-            print("Combo stats", combos, count, combos*count)
+            # print()
+            # print(positions_)
+            # print("Combo stats", combos, count, combos*count)
             # print("Min",min_val_pos,count, combos, min_val_pos*count*combos)
             # print("Spots", counts["#"], count, counts["#"]*count)
-            min_val +=  min_val_pos
+            min_val +=  min_val_pos*count
             # min_val +=  min_val_pos
             # min_val +=  combos*count
             num_pos += counts["#"]*count
@@ -122,19 +122,28 @@ def all_at_once(to_place,grid, presents):
 
     print(grid)
     print("Total pos", num_pos)
-    print("Min val", np.min(grid))
+    # print("Min val", np.min(grid))
     print("Num Placements",  num_placements)
-    print("Num Placements x min",  num_placements*min_val)
+    # print("Num Placements x min",  num_placements*min_val)
+
+    test_limit = 8*sum(to_place)
+    # test_limit = len(grid[0])*len(grid)*8
+    # test_limit = ((len(grid[0])*len(grid)))
+    spots_under_limit = len(grid[grid < test_limit])
+    print("Limit to test",test_limit)
+    print("Spots under limit", spots_under_limit)
     abs_min_val.append(np.min(grid))
 
 
-    print("Spots under limit", len(grid[grid == min_val]))
-    print("Spots over limit", len(grid[grid > min_val]))
+    # print("Spots under limit", len(grid[grid == min_val]))
+    # print("Spots over limit", len(grid[grid > min_val]))
     print("Spots under summed max", len(grid[grid <= max_val]))
     print("Summed Max", max_val)
     print(sum(to_place), sum(to_place)*8)
     # if np.any(grid[grid <= min_val]):
-    if min_val <= len(grid[grid < min_val]):
+    # if min_val <= len(grid[grid < min_val]):
+    if num_pos <= spots_under_limit:
+        # print("Can fit")
         print("Can fit")
         can_fit +=1
     print()
@@ -204,14 +213,17 @@ def solve(input_file: str):
             else:
                 area = len(object) * len(object[0])
                 position =  object[1:-1]
-                positions = set()
-                positions.add("\n".join(position))
-                for i in range(5):
+                # positions = set()
+                positions = []
+                rev_position = ["".join(reversed(x)) for x in position]
+                positions.append("\n".join(position))
+                positions.append("\n".join(rev_position))
+                for i in range(3):
                     position = ["".join(x) for x in list(zip(*position[::-1]))]
                     rev_position = ["".join(reversed(x)) for x in position]
                     # print("adding\n", "\n".join(position), "\nreversed\n", "\n".join(rev_position))
-                    positions.add("\n".join(position))
-                    positions.add("\n".join(rev_position))
+                    positions.append("\n".join(position))
+                    positions.append("\n".join(rev_position))
                 print("All Positions", positions)
                 num_combos = len(positions)
                 present_ = list(positions)
@@ -235,7 +247,7 @@ def solve(input_file: str):
         print()
         print("Filling Tree", space, to_place)
 
-        print(to_place)
+        # print(to_place)
         queue = [(to_place.copy(), grid.copy())]
         visited = set()
 
